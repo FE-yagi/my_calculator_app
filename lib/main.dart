@@ -37,7 +37,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   bool _isAuthenticated = false;
 
   // 正しいパスワード（ここを変更して好きなパスワードに設定可能）
-  final String _correctPassword = '1234';
+  final String _correctPassword = 'FE2127';
 
   // パスワード入力用のコントローラー
   final TextEditingController _passwordController = TextEditingController();

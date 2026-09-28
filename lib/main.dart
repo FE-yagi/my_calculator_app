@@ -1,4 +1,4 @@
-// ver 1.0.1
+// ver 1.1.0-pwa
 import 'package:flutter/material.dart';
 import 'data_models.dart';
 import 'calculator_logic.dart';
@@ -19,7 +19,131 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const DeliveryCalculatorScreen(),
+      home: const AuthWrapper(),
+    );
+  }
+}
+
+/// パスワード認証とメイン画面を切り替えるラッパーウィジェット
+class AuthWrapper extends StatefulWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  // 認証状態のフラグ（初期状態は未認証）
+  bool _isAuthenticated = false;
+
+  // 正しいパスワード（ここを変更して好きなパスワードに設定可能）
+  final String _correctPassword = '1234';
+
+  // パスワード入力用のコントローラー
+  final TextEditingController _passwordController = TextEditingController();
+
+  // エラーメッセージ用
+  String _errorMessage = '';
+
+  // パスワード確認処理
+  void _login() {
+    if (_passwordController.text == _correctPassword) {
+      setState(() {
+        _isAuthenticated = true;
+        _errorMessage = '';
+      });
+    } else {
+      setState(() {
+        _errorMessage = 'パスワードが違います';
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 認証済みの場合は納期計算画面を表示
+    if (_isAuthenticated) {
+      return const DeliveryCalculatorScreen();
+    }
+
+    // 未認証の場合はパスワード入力画面を表示
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('認証画面 ver 1.1.0-pwa'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.lock_outline,
+                size: 80,
+                color: Colors.blue,
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                '納期計算アプリへアクセス',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'パスワードを入力してください',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: 300,
+                child: TextField(
+                  controller: _passwordController,
+                  obscureText: true, // 入力文字を隠す設定
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'パスワード',
+                    prefixIcon: Icon(Icons.key),
+                  ),
+                  onSubmitted: (_) => _login(),
+                ),
+              ),
+              if (_errorMessage.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  _errorMessage,
+                  style: const TextStyle(color: Colors.red, fontSize: 14),
+                ),
+              ],
+              const SizedBox(height: 20),
+              SizedBox(
+                width: 300,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: _login,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('ログイン', style: TextStyle(fontSize: 16)),
+                ),
+              ),
+              const SizedBox(height: 40),
+              // バージョン表記
+              const Text(
+                'ver 1.1.0-pwa',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -86,7 +210,7 @@ class _DeliveryCalculatorScreenState extends State<DeliveryCalculatorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('納期計算アプリ ver 1.0.1'),
+        title: const Text('納期計算アプリ ver 1.1.0-pwa'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: _isLoading

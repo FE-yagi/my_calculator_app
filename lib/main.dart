@@ -105,7 +105,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
                 child: TextField(
                   controller: _passwordController,
                   obscureText: true, // 入力文字を隠す設定
-                  keyboardType: TextInputType.number,
+                  keyboardType: TextInputType.text,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'パスワード',

@@ -1,4 +1,4 @@
-// ver 1.0.0
+// ver 1.1.0
 import 'data_models.dart';
 
 class CalculationResult {
@@ -49,13 +49,48 @@ CalculationResult calculateDelivery({
     );
   }
 
-  // 13桁分解
+  // 13桁コード詳細分解
   String mModel = code.substring(0, 3);
-  String mSize = code.substring(6, 7);
-  String mMaterial = code.substring(9, 10);
-  String mOpt1 = code.substring(10, 11);
-  String mOpt2 = code.substring(11, 12);
-  String mOpt3 = code.substring(12, 13);
+  String mFunc = code.substring(3, 2);
+  String mFlow = code.substring(5, 1);
+  String mSize = code.substring(6, 1);
+  String mConn = code.substring(7, 1);
+  String mStd = code.substring(8, 1);
+  String mMaterial = code.substring(9, 1);
+  String mOpt1 = code.substring(10, 1);
+  String mOpt2 = code.substring(11, 1);
+  String mOpt3 = code.substring(12, 1);
+
+  // バリデーションチェック（master2ルール検証）
+  if (master.validationRules.containsKey(mModel)) {
+    var rule = master.validationRules[mModel]!;
+    bool isError = false;
+
+    if (rule.functions.isNotEmpty && !rule.functions.contains(mFunc)) isError = true;
+    if (rule.flowDirections.isNotEmpty && !rule.flowDirections.contains(mFlow)) isError = true;
+    if (rule.sizes.isNotEmpty && !rule.sizes.contains(mSize)) isError = true;
+    if (rule.connections.isNotEmpty && !rule.connections.contains(mConn)) isError = true;
+    if (rule.standards.isNotEmpty && !rule.standards.contains(mStd)) isError = true;
+    if (rule.materials.isNotEmpty && !rule.materials.contains(mMaterial)) isError = true;
+    if (rule.option1s.isNotEmpty && !rule.option1s.contains(mOpt1)) isError = true;
+    if (rule.option2s.isNotEmpty && !rule.option2s.contains(mOpt2)) isError = true;
+    if (rule.option3s.isNotEmpty && !rule.option3s.contains(mOpt3)) isError = true;
+
+    if (isError) {
+      return CalculationResult(
+        modelSize: '$mModel-$mSize', material: '-', opt1: '-', opt2: '-', opt3: '-',
+        days1: '-', days2: '-', days3: '-', days4: '-', days5: '-',
+        totalDisplay: '型式エラー', shipDateDisplay: '型式エラー', showCatalogMessage: false,
+      );
+    }
+  } else {
+    // 機種自体が存在しない場合
+    return CalculationResult(
+      modelSize: '$mModel-$mSize', material: '-', opt1: '-', opt2: '-', opt3: '-',
+      days1: '-', days2: '-', days3: '-', days4: '-', days5: '-',
+      totalDisplay: '型式エラー', shipDateDisplay: '型式エラー', showCatalogMessage: false,
+    );
+  }
 
   String days1 = master.sizeMatrix[mModel]?[mSize] ?? 'N';
   String days2 = master.materialMaster[mMaterial] ?? '0';

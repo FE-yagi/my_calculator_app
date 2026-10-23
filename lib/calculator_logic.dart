@@ -49,17 +49,17 @@ CalculationResult calculateDelivery({
     );
   }
 
-  // 13桁コード詳細分解
-  String mModel = code.substring(0, 3);
-  String mFunc = code.substring(3, 2);
-  String mFlow = code.substring(5, 1);
-  String mSize = code.substring(6, 1);
-  String mConn = code.substring(7, 1);
-  String mStd = code.substring(8, 1);
-  String mMaterial = code.substring(9, 1);
-  String mOpt1 = code.substring(10, 1);
-  String mOpt2 = code.substring(11, 1);
-  String mOpt3 = code.substring(12, 1);
+  // 13桁コード詳細分解（substring(開始位置, 終了位置) に修正）
+  String mModel = code.substring(0, 3);     // 0〜2文字目 (機種)
+  String mFunc = code.substring(3, 5);      // 3〜4文字目 (機能: 2桁)
+  String mFlow = code.substring(5, 6);      // 5文字目 (流れ方向)
+  String mSize = code.substring(6, 7);      // 6文字目 (口径)
+  String mConn = code.substring(7, 8);      // 7文字目 (接続)
+  String mStd = code.substring(8, 9);       // 8文字目 (規格)
+  String mMaterial = code.substring(9, 10); // 9文字目 (材質)
+  String mOpt1 = code.substring(10, 11);    // 10文字目 (付加1)
+  String mOpt2 = code.substring(11, 12);    // 11文字目 (付加2)
+  String mOpt3 = code.substring(12, 13);    // 12文字目 (付加3)
 
   // バリデーションチェック（master2ルール検証）
   if (master.validationRules.containsKey(mModel)) {

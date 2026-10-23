@@ -87,9 +87,12 @@ class DataLoader {
           if (trimmed.isEmpty || trimmed.startsWith('#')) continue;
 
           if (trimmed.startsWith('機種:')) {
-            var modelName = trimmed.substring(3).trim().toUpperCase();
-            currentRule = ModelValidationRule();
-            master.validationRules[modelName] = currentRule;
+            var idx = trimmed.indexOf(':');
+            if (idx != -1 && trimmed.length > idx + 1) {
+              var modelName = trimmed.substring(idx + 1).trim().toUpperCase();
+              currentRule = ModelValidationRule();
+              master.validationRules[modelName] = currentRule;
+            }
           } else if (currentRule != null && trimmed.contains(':')) {
             var idx = trimmed.indexOf(':');
             var itemKey = trimmed.substring(0, idx).trim();

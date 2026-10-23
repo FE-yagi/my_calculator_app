@@ -48,7 +48,7 @@
 口径:D,E,F,G,H,I,J,K,L,Z
 接続:B,D,Z
 規格:A,G,H,Z
-材質:G,Z
+材質:Q,Z
 付加１:A,Z
 付加２:A,B,C,D,E,F,Z
 付加３:A,D,K,R,U,Z
@@ -114,7 +114,7 @@
 口径:D,E,F,G,H,I,J,K,Z
 接続:B,D,Z
 規格:A,H,Z
-材質:G,R,Z
+材質:Q,R,Z
 付加１:A,Z
 付加２:A,B,C,D,E,F,Z
 付加３:A,D,K,R,U,Z

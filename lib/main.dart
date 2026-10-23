@@ -75,7 +75,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     // 未認証の場合はパスワード入力画面を表示
     return Scaffold(
       appBar: AppBar(
-        title: const Text('認証画面 ver 1.1.1-pwa'),
+        title: const Text('認証画面 ver 1.1.2-pwa'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Center(

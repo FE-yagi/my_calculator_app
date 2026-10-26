@@ -10,30 +10,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3[cite: 19]
+        uses: actions/checkout@v3
 
       - name: Setup Java
-        uses: actions/setup-java@v3[cite: 19]
+        uses: actions/setup-java@v3
         with:
-          distribution: 'zulu'[cite: 19]
-          java-version: '17'[cite: 19]
+          distribution: 'zulu'
+          java-version: '17'
 
       - name: Setup Flutter
-        uses: subosito/flutter-action@v2[cite: 19]
+        uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'[cite: 19]
+          channel: 'stable'
 
       - name: Install dependencies
-        run: flutter pub get[cite: 19]
+        run: flutter pub get
 
       - name: Clean build cache
         run: flutter clean
 
       - name: Build Web
-        run: flutter build web --release --base-href "/my_calculator_app/"[cite: 19]
+        run: flutter build web --release --base-href "/my_calculator_app/"
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3[cite: 19]
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}[cite: 19]
-          publish_dir: ./build/web[cite: 19]
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web

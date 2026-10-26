@@ -1,4 +1,4 @@
-// ver 1.1.0
+// ver 1.1.2-pwa
 import 'data_models.dart';
 
 class CalculationResult {
@@ -33,6 +33,51 @@ class CalculationResult {
   });
 }
 
+/// 日本の祝日を判定するヘルパー関数
+bool _isJapaneseHoliday(DateTime date) {
+  int m = date.month;
+  int d = date.day;
+
+  // 固定祝日
+  if (m == 1 && d == 1) return true;   // 元日
+  if (m == 1 && d == 2) return true;   // 年末年始
+  if (m == 1 && d == 3) return true;   // 年末年始
+  if (m == 2 && d == 11) return true;  // 建国記念の日
+  if (m == 2 && d == 23) return true;  // 天皇誕生日
+  if (m == 4 && d == 29) return true;  // 昭和の日
+  if (m == 5 && d == 3) return true;   // 憲法記念日
+  if (m == 5 && d == 4) return true;   // みどりの日
+  if (m == 5 && d == 5) return true;   // こどもの日
+  if (m == 8 && d == 11) return true;  // 山の日
+  if (m == 11 && d == 3) return true;  // 文化の日
+  if (m == 11 && d == 23) return true; // 勤労感謝の日
+  if (m == 12 && d == 29) return true; // 年末年始
+  if (m == 12 && d == 30) return true; // 年末年始
+  if (m == 12 && d == 31) return true; // 年末年始
+
+  // ハッピーマンデー（第N月曜日）の判定用ヘルパー
+  bool isNthDayOfWeek(int targetMonth, int weekday, int n) {
+    if (date.month != targetMonth || date.weekday != weekday) return false;
+    int nth = (date.day - 1) ~/ 7 + 1;
+    return nth == n;
+  }
+
+  // 成人の日 (1月第2月曜)
+  if (isNthDayOfWeek(1, DateTime.monday, 2)) return true;
+  // 海の日 (7月第3月曜)
+  if (isNthDayOfWeek(7, DateTime.monday, 3)) return true;
+  // 敬老の日 (9月第3月曜)
+  if (isNthDayOfWeek(9, DateTime.monday, 3)) return true;
+  // スポーツの日 (10月第2月曜)
+  if (isNthDayOfWeek(10, DateTime.monday, 2)) return true;
+
+  // 春分の日・秋分の日（2026年等の主要な日付を網羅）
+  if (m == 3 && (d == 20 || d == 21)) return true; // 春分の日付近
+  if (m == 9 && (d == 22 || d == 23)) return true; // 秋分の日付近
+
+  return false;
+}
+
 CalculationResult calculateDelivery({
   required String code,
   required DateTime orderDate,
@@ -49,7 +94,7 @@ CalculationResult calculateDelivery({
     );
   }
 
-  // 13桁コード詳細分解（substring(開始位置, 終了位置) に修正）
+  // 13桁コード詳細分解
   String mModel = code.substring(0, 3);     // 0〜2文字目 (機種)
   String mFunc = code.substring(3, 5);      // 3〜4文字目 (機能: 2桁)
   String mFlow = code.substring(5, 6);      // 5文字目 (流れ方向)
@@ -61,7 +106,7 @@ CalculationResult calculateDelivery({
   String mOpt2 = code.substring(11, 12);    // 11文字目 (付加2)
   String mOpt3 = code.substring(12, 13);    // 12文字目 (付加3)
 
-  // バリデーションチェック（master2ルール検証）
+  // バリデーションチェック
   if (master.validationRules.containsKey(mModel)) {
     var rule = master.validationRules[mModel]!;
     bool isError = false;
@@ -84,7 +129,6 @@ CalculationResult calculateDelivery({
       );
     }
   } else {
-    // 機種自体が存在しない場合
     return CalculationResult(
       modelSize: '$mModel-$mSize', material: '-', opt1: '-', opt2: '-', opt3: '-',
       days1: '-', days2: '-', days3: '-', days4: '-', days5: '-',
@@ -122,18 +166,24 @@ CalculationResult calculateDelivery({
     totalDays += int.tryParse(valStr) ?? 0;
   }
 
-  // 営業日計算
+  // 営業日計算（土日・祝日・カレンダー休日を考慮）
   DateTime current = orderDate;
   int addedDays = 0;
   while (addedDays < totalDays) {
     current = current.add(const Duration(days: 1));
+    
+    // 土日の判定
     if (current.weekday == DateTime.saturday || current.weekday == DateTime.sunday) {
       continue;
     }
+    
     DateTime dateOnly = DateTime(current.year, current.month, current.day);
-    if (holidaySet.contains(dateOnly)) {
+    
+    // カレンダーファイル（holidaySet）または内部の祝日判定に引っかかったらスキップ
+    if (holidaySet.contains(dateOnly) || _isJapaneseHoliday(current)) {
       continue;
     }
+    
     addedDays++;
   }
 

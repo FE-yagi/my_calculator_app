@@ -75,7 +75,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     // 未認証の場合はパスワード入力画面を表示
     return Scaffold(
       appBar: AppBar(
-        title: const Text('認証画面 ver 1.1.2-pwa'),
+        title: const Text('認証画面 ver 2.3.5-pwa'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Center(
@@ -137,7 +137,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
               const SizedBox(height: 40),
               // バージョン表記
               const Text(
-                'ver 1.1.0-pwa',
+                'ver 2.3.5-pwa',
                 style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
@@ -210,7 +210,7 @@ class _DeliveryCalculatorScreenState extends State<DeliveryCalculatorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('納期計算アプリ ver 1.1.0-pwa'),
+        title: const Text('納期計算アプリ ver 2.3.5-pwa'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: _isLoading

@@ -1,4 +1,4 @@
-// ver 1.1.2-pwa
+// ver 2.3.13-pwa
 import 'data_models.dart';
 
 class CalculationResult {
@@ -15,6 +15,7 @@ class CalculationResult {
   final String totalDisplay;
   final String shipDateDisplay;
   final bool showCatalogMessage;
+  final String catalogMessage;
 
   CalculationResult({
     required this.modelSize,
@@ -30,6 +31,7 @@ class CalculationResult {
     required this.totalDisplay,
     required this.shipDateDisplay,
     required this.showCatalogMessage,
+    required this.catalogMessage,
   });
 }
 
@@ -38,42 +40,35 @@ bool _isJapaneseHoliday(DateTime date) {
   int m = date.month;
   int d = date.day;
 
-  // 固定祝日
-  if (m == 1 && d == 1) return true;   // 元日
-  if (m == 1 && d == 2) return true;   // 年末年始
-  if (m == 1 && d == 3) return true;   // 年末年始
-  if (m == 2 && d == 11) return true;  // 建国記念の日
-  if (m == 2 && d == 23) return true;  // 天皇誕生日
-  if (m == 4 && d == 29) return true;  // 昭和の日
-  if (m == 5 && d == 3) return true;   // 憲法記念日
-  if (m == 5 && d == 4) return true;   // みどりの日
-  if (m == 5 && d == 5) return true;   // こどもの日
-  if (m == 8 && d == 11) return true;  // 山の日
-  if (m == 11 && d == 3) return true;  // 文化の日
-  if (m == 11 && d == 23) return true; // 勤労感謝の日
-  if (m == 12 && d == 29) return true; // 年末年始
-  if (m == 12 && d == 30) return true; // 年末年始
-  if (m == 12 && d == 31) return true; // 年末年始
+  if (m == 1 && d == 1) return true;
+  if (m == 1 && d == 2) return true;
+  if (m == 1 && d == 3) return true;
+  if (m == 2 && d == 11) return true;
+  if (m == 2 && d == 23) return true;
+  if (m == 4 && d == 29) return true;
+  if (m == 5 && d == 3) return true;
+  if (m == 5 && d == 4) return true;
+  if (m == 5 && d == 5) return true;
+  if (m == 8 && d == 11) return true;
+  if (m == 11 && d == 3) return true;
+  if (m == 11 && d == 23) return true;
+  if (m == 12 && d == 29) return true;
+  if (m == 12 && d == 30) return true;
+  if (m == 12 && d == 31) return true;
 
-  // ハッピーマンデー（第N月曜日）の判定用ヘルパー
   bool isNthDayOfWeek(int targetMonth, int weekday, int n) {
     if (date.month != targetMonth || date.weekday != weekday) return false;
     int nth = (date.day - 1) ~/ 7 + 1;
     return nth == n;
   }
 
-  // 成人の日 (1月第2月曜)
   if (isNthDayOfWeek(1, DateTime.monday, 2)) return true;
-  // 海の日 (7月第3月曜)
   if (isNthDayOfWeek(7, DateTime.monday, 3)) return true;
-  // 敬老の日 (9月第3月曜)
   if (isNthDayOfWeek(9, DateTime.monday, 3)) return true;
-  // スポーツの日 (10月第2月曜)
   if (isNthDayOfWeek(10, DateTime.monday, 2)) return true;
 
-  // 春分の日・秋分の日（2026年等の主要な日付を網羅）
-  if (m == 3 && (d == 20 || d == 21)) return true; // 春分の日付近
-  if (m == 9 && (d == 22 || d == 23)) return true; // 秋分の日付近
+  if (m == 3 && (d == 20 || d == 21)) return true;
+  if (m == 9 && (d == 22 || d == 23)) return true;
 
   return false;
 }
@@ -83,6 +78,9 @@ CalculationResult calculateDelivery({
   required DateTime orderDate,
   required MasterData master,
   required Set<DateTime> holidaySet,
+  String fluidType = 'H2O',
+  double maxFlow = 5.0,
+  String flowUnit = 'L/min',
 }) {
   code = code.trim().toUpperCase();
 
@@ -91,22 +89,21 @@ CalculationResult calculateDelivery({
       modelSize: '', material: '', opt1: '', opt2: '', opt3: '',
       days1: '0', days2: '0', days3: '0', days4: '0', days5: '0',
       totalDisplay: '0 日', shipDateDisplay: '-', showCatalogMessage: false,
+      catalogMessage: '',
     );
   }
 
-  // 13桁コード詳細分解
-  String mModel = code.substring(0, 3);     // 0〜2文字目 (機種)
-  String mFunc = code.substring(3, 5);      // 3〜4文字目 (機能: 2桁)
-  String mFlow = code.substring(5, 6);      // 5文字目 (流れ方向)
-  String mSize = code.substring(6, 7);      // 6文字目 (口径)
-  String mConn = code.substring(7, 8);      // 7文字目 (接続)
-  String mStd = code.substring(8, 9);       // 8文字目 (規格)
-  String mMaterial = code.substring(9, 10); // 9文字目 (材質)
-  String mOpt1 = code.substring(10, 11);    // 10文字目 (付加1)
-  String mOpt2 = code.substring(11, 12);    // 11文字目 (付加2)
-  String mOpt3 = code.substring(12, 13);    // 12文字目 (付加3)
+  String mModel = code.substring(0, 3);
+  String mFunc = code.substring(3, 5);
+  String mFlow = code.substring(5, 6);
+  String mSize = code.substring(6, 7);
+  String mConn = code.substring(7, 8);
+  String mStd = code.substring(8, 9);
+  String mMaterial = code.substring(9, 10);
+  String mOpt1 = code.substring(10, 11);
+  String mOpt2 = code.substring(11, 12);
+  String mOpt3 = code.substring(12, 13);
 
-  // バリデーションチェック
   if (master.validationRules.containsKey(mModel)) {
     var rule = master.validationRules[mModel]!;
     bool isError = false;
@@ -126,6 +123,7 @@ CalculationResult calculateDelivery({
         modelSize: '$mModel-$mSize', material: '-', opt1: '-', opt2: '-', opt3: '-',
         days1: '-', days2: '-', days3: '-', days4: '-', days5: '-',
         totalDisplay: '型式エラー', shipDateDisplay: '型式エラー', showCatalogMessage: false,
+        catalogMessage: '',
       );
     }
   } else {
@@ -133,6 +131,7 @@ CalculationResult calculateDelivery({
       modelSize: '$mModel-$mSize', material: '-', opt1: '-', opt2: '-', opt3: '-',
       days1: '-', days2: '-', days3: '-', days4: '-', days5: '-',
       totalDisplay: '型式エラー', shipDateDisplay: '型式エラー', showCatalogMessage: false,
+      catalogMessage: '',
     );
   }
 
@@ -143,13 +142,14 @@ CalculationResult calculateDelivery({
   String days5 = master.option3Master[mOpt3] ?? '0';
 
   List<String> rawList = [days1, days2, days3, days4, days5];
-  bool showMsg = mModel.startsWith('ADF') || mModel.startsWith('AVP');
+  bool isAdcAvp = mModel.startsWith('ADF') || mModel.startsWith('AVP');
 
   if (rawList.contains('N')) {
     return CalculationResult(
       modelSize: '$mModel-$mSize', material: mMaterial, opt1: mOpt1, opt2: mOpt2, opt3: mOpt3,
       days1: days1, days2: days2, days3: days3, days4: days4, days5: days5,
-      totalDisplay: '制作不可', shipDateDisplay: '制作不可', showCatalogMessage: showMsg,
+      totalDisplay: '制作不可', shipDateDisplay: '制作不可', showCatalogMessage: isAdcAvp,
+      catalogMessage: isAdcAvp ? 'カタログを確認して◎は上記納期、〇は+10稼働日、-は制作不可。' : '',
     );
   }
 
@@ -157,29 +157,84 @@ CalculationResult calculateDelivery({
     return CalculationResult(
       modelSize: '$mModel-$mSize', material: mMaterial, opt1: mOpt1, opt2: mOpt2, opt3: mOpt3,
       days1: days1, days2: days2, days3: days3, days4: days4, days5: days5,
-      totalDisplay: '工場問合せ', shipDateDisplay: '工場問合せ', showCatalogMessage: showMsg,
+      totalDisplay: '工場問合せ', shipDateDisplay: '工場問合せ', showCatalogMessage: isAdcAvp,
+      catalogMessage: isAdcAvp ? 'カタログを確認して◎は上記納期、〇は+10稼働日、-は制作不可。' : '',
     );
   }
 
-  int totalDays = 0;
+  int baseDays = 0;
   for (var valStr in rawList) {
-    totalDays += int.tryParse(valStr) ?? 0;
+    baseDays += int.tryParse(valStr) ?? 0;
   }
 
-  // 営業日計算（土日・祝日・カレンダー休日を考慮）
+  int catalogAddDays = 0;
+  bool isOutOfRange = false;
+
+  if (isAdcAvp) {
+    if (fluidType != 'H2O') {
+      return CalculationResult(
+        modelSize: '$mModel-$mSize', material: mMaterial, opt1: mOpt1, opt2: mOpt2, opt3: mOpt3,
+        days1: days1, days2: days2, days3: days3, days4: days4, days5: days5,
+        totalDisplay: '工場問合せ', shipDateDisplay: '工場問合せ', showCatalogMessage: true,
+        catalogMessage: 'カタログを確認して◎は上記納期、〇は+10稼働日、-は制作不可。',
+      );
+    } else {
+      var catalogList = (mModel.startsWith('ADF')) ? master.adfCatalog : master.avpCatalog;
+      String matchedSymbol = '-';
+      bool foundRange = false;
+
+      // 口径コード（例: 'E' など）をカタログの列キー（'1', '2', '3', '4'）に変換するマッピング
+      // ADFの場合、サイズ 'E' は通常 1番目の口径（'1'）に対応
+      String catalogSizeKey = '1';
+      if (mSize == 'E') {
+        catalogSizeKey = '1';
+      } else if (mSize == 'F' || mSize == 'H') { // 必要に応じて他のサイズ文字の対応も追加可能
+        catalogSizeKey = '2';
+      } else {
+        // デフォルトとして mSize をそのまま試すか、数値ならそのまま使う
+        catalogSizeKey = mSize;
+      }
+
+      for (var row in catalogList) {
+        if (row.unit == flowUnit && maxFlow >= row.minFlow && maxFlow <= row.maxFlow) {
+          foundRange = true;
+          matchedSymbol = row.sizeSymbols[catalogSizeKey] ?? '-';
+          break;
+        }
+      }
+
+      if (!foundRange || matchedSymbol == '-') {
+        isOutOfRange = true;
+      } else if (matchedSymbol == '〇') {
+        catalogAddDays = 10;
+      } else if (matchedSymbol == '◎') {
+        catalogAddDays = 0;
+      }
+    }
+  }
+
+  int totalDays = baseDays + catalogAddDays;
+
+  if (isOutOfRange) {
+    return CalculationResult(
+      modelSize: '$mModel-$mSize', material: mMaterial, opt1: mOpt1, opt2: mOpt2, opt3: mOpt3,
+      days1: days1, days2: days2, days3: days3, days4: days4, days5: days5,
+      totalDisplay: '流量範囲外(制作不可)', shipDateDisplay: '流量範囲外(制作不可)', showCatalogMessage: true,
+      catalogMessage: 'カタログを確認して◎は上記納期、〇は+10稼働日、-は制作不可。',
+    );
+  }
+
   DateTime current = orderDate;
   int addedDays = 0;
   while (addedDays < totalDays) {
     current = current.add(const Duration(days: 1));
     
-    // 土日の判定
     if (current.weekday == DateTime.saturday || current.weekday == DateTime.sunday) {
       continue;
     }
     
     DateTime dateOnly = DateTime(current.year, current.month, current.day);
     
-    // カレンダーファイル（holidaySet）または内部の祝日判定に引っかかったらスキップ
     if (holidaySet.contains(dateOnly) || _isJapaneseHoliday(current)) {
       continue;
     }
@@ -192,6 +247,7 @@ CalculationResult calculateDelivery({
   return CalculationResult(
     modelSize: '$mModel-$mSize', material: mMaterial, opt1: mOpt1, opt2: mOpt2, opt3: mOpt3,
     days1: days1, days2: days2, days3: days3, days4: days4, days5: days5,
-    totalDisplay: '$totalDays 日', shipDateDisplay: shipStr, showCatalogMessage: showMsg,
+    totalDisplay: '$totalDays 日', shipDateDisplay: shipStr, showCatalogMessage: isAdcAvp,
+    catalogMessage: isAdcAvp ? 'カタログを確認して◎は上記納期、〇は+10稼働日、-は制作不可。' : '',
   );
 }

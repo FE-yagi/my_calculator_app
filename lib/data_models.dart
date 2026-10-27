@@ -1,4 +1,4 @@
-// ver 1.1.0
+// ver 2.3.13-pwa
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 
@@ -15,6 +15,22 @@ class ModelValidationRule {
   Set<String> option3s = {};
 }
 
+// カタログの1行データを保持するクラス（ADF/AVP用）
+class CatalogRow {
+  final String unit;
+  final double minFlow;
+  final double maxFlow;
+  final Map<String, String> sizeSymbols; // 例: {'1': '◎', '2': '〇', ...}
+
+  CatalogRow({
+    required this.unit,
+    required this.minFlow,
+    required this.maxFlow,
+    required this.sizeSymbols,
+  });
+}
+
+// マスターデータを保持するクラス
 class MasterData {
   bool isLoaded = false;
   Map<String, Map<String, String>> sizeMatrix = {};
@@ -25,6 +41,10 @@ class MasterData {
   
   // バリデーションルール用のマップ
   Map<String, ModelValidationRule> validationRules = {};
+
+  // カタログデータ（ADF / AVP）
+  List<CatalogRow> adfCatalog = [];
+  List<CatalogRow> avpCatalog = [];
 }
 
 class DataLoader {
@@ -115,11 +135,54 @@ class DataLoader {
         }
       } catch (_) {}
 
+      // 3. ADF_master.DAT の読み込み
+      try {
+        final contentAdf = await rootBundle.loadString('assets/ADF_master.DAT');
+        master.adfCatalog = _parseCatalogData(contentAdf);
+      } catch (_) {}
+
+      // 4. AVP_master.DAT の読み込み
+      try {
+        final contentAvp = await rootBundle.loadString('assets/AVP_master.DAT');
+        master.avpCatalog = _parseCatalogData(contentAvp);
+      } catch (_) {}
+
       master.isLoaded = true;
     } catch (e) {
       master.isLoaded = false;
     }
     return master;
+  }
+
+  // カタログファイルをパースするヘルパー関数
+  static List<CatalogRow> _parseCatalogData(String content) {
+    List<CatalogRow> rows = [];
+    final lines = LineSplitter.split(content);
+    for (var line in lines) {
+      var trimmed = line.trim();
+      if (trimmed.isEmpty || trimmed.startsWith('#')) continue;
+
+      var parts = trimmed.split(',');
+      if (parts.length >= 4) {
+        String unit = parts[1].replaceAll(RegExp(r'[\r\n\s]'), '');
+        double minFlow = double.tryParse(parts[2].replaceAll(RegExp(r'[\r\n\s]'), '')) ?? 0.0;
+        double maxFlow = double.tryParse(parts[3].replaceAll(RegExp(r'[\r\n\s]'), '')) ?? 0.0;
+
+        Map<String, String> sizeSymbols = {};
+        for (int i = 4; i < parts.length; i++) {
+          String sizeKey = (i - 3).toString();
+          sizeSymbols[sizeKey] = parts[i].replaceAll(RegExp(r'[\r\n\s]'), '');
+        }
+
+        rows.add(CatalogRow(
+          unit: unit,
+          minFlow: minFlow,
+          maxFlow: maxFlow,
+          sizeSymbols: sizeSymbols,
+        ));
+      }
+    }
+    return rows;
   }
 
   static Future<Set<DateTime>> loadCalendarData() async {
@@ -136,9 +199,7 @@ class DataLoader {
           holidaySet.add(DateTime(dt.year, dt.month, dt.day));
         } catch (_) {}
       }
-    } catch (e) {
-      // エラー時は空セット
-    }
+    } catch (e) {}
     return holidaySet;
   }
 }

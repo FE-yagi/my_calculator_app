@@ -1,4 +1,4 @@
-// ver 2.3.13-pwa
+// ver 2.3.13-pwaa
 import 'package:flutter/material.dart';
 import 'data_models.dart';
 import 'calculator_logic.dart';
@@ -65,7 +65,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('認証画面 ver 2.3.13-pwa'),
+        title: const Text('認証画面 ver 2.3.13-pwaa'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Center(
@@ -126,7 +126,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
               ),
               const SizedBox(height: 40),
               const Text(
-                'ver 2.3.13-pwa',
+                'ver 2.3.13-pwaa',
                 style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
@@ -149,7 +149,7 @@ class _DeliveryCalculatorScreenState extends State<DeliveryCalculatorScreen> {
   final TextEditingController _codeController = TextEditingController(text: 'ADF101EDHEAAA');
   final TextEditingController _maxFlowController = TextEditingController(text: '25');
   
-  DateTime _selectedDate = DateTime(2026, 10, 27);
+  late DateTime _selectedDate;
   MasterData _masterData = MasterData();
   Set<DateTime> _holidaySet = {};
   bool _isLoading = true;
@@ -163,6 +163,8 @@ class _DeliveryCalculatorScreenState extends State<DeliveryCalculatorScreen> {
   @override
   void initState() {
     super.initState();
+    final now = DateTime.now();
+    _selectedDate = DateTime(now.year, now.month, now.day);
     _loadAllData();
   }
 
@@ -216,7 +218,7 @@ class _DeliveryCalculatorScreenState extends State<DeliveryCalculatorScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('納期計算アプリ ver 2.3.13-pwa'),
+        title: const Text('納期計算アプリ ver 2.3.13-pwaa'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: _isLoading

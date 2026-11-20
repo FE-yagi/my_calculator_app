@@ -183,16 +183,32 @@ CalculationResult calculateDelivery({
       String matchedSymbol = '-';
       bool foundRange = false;
 
-      // 口径コード（例: 'E' など）をカタログの列キー（'1', '2', '3', '4'）に変換するマッピング
-      // ADFの場合、サイズ 'E' は通常 1番目の口径（'1'）に対応
-      String catalogSizeKey = '1';
-      if (mSize == 'E') {
-        catalogSizeKey = '1';
-      } else if (mSize == 'F' || mSize == 'H') { // 必要に応じて他のサイズ文字の対応も追加可能
-        catalogSizeKey = '2';
-      } else {
-        // デフォルトとして mSize をそのまま試すか、数値ならそのまま使う
-        catalogSizeKey = mSize;
+      // 口径コードをカタログの列キー（'1', '2', '3', '4'）に変換するマッピング
+      String catalogSizeKey = '';
+      if (mModel.startsWith('ADF')) {
+        // ADF_master.DAT: 1=Rc1/2(D), 2=Rc3/4_1(E), 3=Rc3/4(F), 4=Rc1(G/H)
+        if (mSize == 'D') {
+          catalogSizeKey = '1';
+        } else if (mSize == 'E') {
+          catalogSizeKey = '2';
+        } else if (mSize == 'F') {
+          catalogSizeKey = '3';
+        } else if (mSize == 'G' || mSize == 'H') {
+          catalogSizeKey = '4';
+        } else {
+          catalogSizeKey = mSize;
+        }
+      } else if (mModel.startsWith('AVP')) {
+        // AVP_master.DAT: 1=15A(D), 2=20A(E), 3=25A(F/G/H)
+        if (mSize == 'D') {
+          catalogSizeKey = '1';
+        } else if (mSize == 'E') {
+          catalogSizeKey = '2';
+        } else if (mSize == 'F' || mSize == 'G' || mSize == 'H') {
+          catalogSizeKey = '3';
+        } else {
+          catalogSizeKey = mSize;
+        }
       }
 
       for (var row in catalogList) {
